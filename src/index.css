@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased overflow-x-hidden;
+  }
+}
+
+/* 雪花動畫 */
+.snowflake {
+  position: fixed;
+  top: -10px;
+  color: white;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  z-index: 40;
+  pointer-events: none;
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes fall {
+  0% { transform: translateY(-10vh) translateX(0); opacity: 1; }
+  100% { transform: translateY(105vh) translateX(20px); opacity: 0.3; }
+}
+
+/* 聖誕燈串動畫 */
+@keyframes glow-red {
+  0%, 100% { box-shadow: 0 0 10px 2px #D42426; opacity: 1; }
+  50% { box-shadow: 0 0 5px 1px #D42426; opacity: 0.5; }
+}
+@keyframes glow-green {
+  0%, 100% { box-shadow: 0 0 10px 2px #165B33; opacity: 1; }
+  50% { box-shadow: 0 0 5px 1px #165B33; opacity: 0.5; }
+}
+@keyframes glow-gold {
+  0%, 100% { box-shadow: 0 0 10px 2px #F8B229; opacity: 1; }
+  50% { box-shadow: 0 0 5px 1px #F8B229; opacity: 0.5; }
+}
+
+.christmas-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 15px;
+  position: relative;
+}
+.christmas-light::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 3px;
+  width: 6px;
+  height: 6px;
+  background: #333;
+  border-radius: 2px;
+}
+.christmas-light.red { background: #D42426; animation: glow-red 2s infinite alternate; }
+.christmas-light.green { background: #165B33; animation: glow-green 2s infinite 0.5s alternate; }
+.christmas-light.gold { background: #F8B229; animation: glow-gold 2s infinite 1s alternate; }
+
+.wire {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #333;
+  z-index: 45;
+  border-bottom: 2px solid rgba(0,0,0,0.2);
+  border-radius: 50%;
+}
