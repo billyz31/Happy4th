@@ -100,7 +100,7 @@ function App() {
       particleCount: 150,
       spread: 100,
       origin: { y: 0.6 },
-      colors: ['#D42426', '#165B33', '#F8B229', '#FFFFFF'],
+      colors: ['#D42426', '#2563EB', '#F8B229', '#FFFFFF'],
       shapes: ['circle', 'square'], // 可以嘗試加上 'star' 如果支持
       scalar: 1.2
     });

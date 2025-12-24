@@ -31,9 +31,9 @@
   0%, 100% { box-shadow: 0 0 10px 2px #D42426; opacity: 1; }
   50% { box-shadow: 0 0 5px 1px #D42426; opacity: 0.5; }
 }
-@keyframes glow-green {
-  0%, 100% { box-shadow: 0 0 10px 2px #165B33; opacity: 1; }
-  50% { box-shadow: 0 0 5px 1px #165B33; opacity: 0.5; }
+@keyframes glow-blue {
+  0%, 100% { box-shadow: 0 0 10px 2px #2563EB; opacity: 1; }
+  50% { box-shadow: 0 0 5px 1px #2563EB; opacity: 0.5; }
 }
 @keyframes glow-gold {
   0%, 100% { box-shadow: 0 0 10px 2px #F8B229; opacity: 1; }

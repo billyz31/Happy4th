@@ -9,7 +9,7 @@ export default {
       colors: {
         christmas: {
           red: '#D42426',
-          green: '#165B33',
+          blue: '#2563EB', // 替換綠色為皇家藍
           gold: '#F8B229',
           cream: '#F8F5F2',
           cookie: '#B87C4C', // 更深的薑餅色，讓雪花更明顯
