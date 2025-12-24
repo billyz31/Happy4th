@@ -112,15 +112,24 @@ function App() {
       <ChristmasLights />
       
       {/* Hero Section */}
-      <header className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-christmas-dark/20 z-10" />
-        <img 
-          src={PHOTOS[0]} 
-          alt="Cover" 
-          className="absolute inset-0 w-full h-full object-cover object-[65%_center] md:object-center filter brightness-75"
+      <header className="relative h-screen flex items-center justify-center overflow-hidden bg-christmas-dark">
+        {/* 背景模糊層：讓照片即使縮放也不會留黑邊，而是有氛圍感 */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center blur-xl opacity-50 scale-110"
+          style={{ backgroundImage: `url(${PHOTOS[0]})` }}
         />
+        <div className="absolute inset-0 bg-black/30 z-10" />
         
-        <div className="relative z-20 text-center text-white px-4">
+        {/* 主圖：在手機上改為 contain，確保完整顯示不裁切 */}
+        <div className="absolute inset-0 flex items-center justify-center z-0">
+          <img 
+            src={PHOTOS[0]} 
+            alt="Cover" 
+            className="w-full h-full md:object-cover object-contain max-h-screen"
+          />
+        </div>
+        
+        <div className="relative z-20 text-center text-white px-4 mt-40 md:mt-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
