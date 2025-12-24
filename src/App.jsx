@@ -200,11 +200,11 @@ function App() {
       </section>
 
       {/* Love Letter Section */}
-      <section className="py-20 px-4 bg-christmas-green text-white relative overflow-hidden">
+      <section className="py-20 px-4 bg-christmas-red text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/snow.png')]"></div>
         <div className="max-w-3xl mx-auto relative z-10 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 flex items-center justify-center gap-3">
-            <Heart className="fill-christmas-red text-christmas-red" /> 給親愛的仙仙
+            <Heart className="fill-white text-white" /> 給親愛的仙仙
           </h2>
           
           <div className="bg-white/10 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-xl border border-white/20">
