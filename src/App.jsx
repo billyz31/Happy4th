@@ -117,7 +117,7 @@ function App() {
         <img 
           src={PHOTOS[0]} 
           alt="Cover" 
-          className="absolute inset-0 w-full h-full object-cover filter brightness-75"
+          className="absolute inset-0 w-full h-full object-cover object-[65%_center] md:object-center filter brightness-75"
         />
         
         <div className="relative z-20 text-center text-white px-4">
