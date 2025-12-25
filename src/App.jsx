@@ -27,6 +27,7 @@ const PHOTOS = [
 const MusicTest = () => {
   const [testResults, setTestResults] = useState([]);
   const [isTesting, setIsTesting] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const testAudioPaths = [
     { path: "/bgm.mp3", name: "主要音樂檔案" },
@@ -82,25 +83,46 @@ const MusicTest = () => {
     setIsTesting(false);
   };
 
+  if (!isVisible) {
+    return (
+      <button
+        onClick={() => setIsVisible(true)}
+        className="fixed top-4 right-4 z-50 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        title="顯示音樂測試"
+      >
+        <TestTube size={20} />
+      </button>
+    );
+  }
+
   return (
-    <div className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-md rounded-lg p-4 shadow-lg border">
-      <div className="flex items-center gap-2 mb-3">
-        <TestTube size={18} className="text-blue-600" />
-        <h3 className="font-semibold text-gray-800">音樂測試</h3>
+    <div className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-md rounded-lg p-4 shadow-lg border min-w-64">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <TestTube size={18} className="text-blue-600" />
+          <h3 className="font-semibold text-gray-800">音樂測試</h3>
+        </div>
+        <button
+          onClick={() => setIsVisible(false)}
+          className="text-gray-500 hover:text-gray-700 transition-colors"
+          title="隱藏測試面板"
+        >
+          ✕
+        </button>
       </div>
       
       <button
         onClick={runAudioTest}
         disabled={isTesting}
-        className="w-full bg-blue-600 text-white py-2 px-3 rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
+        className="w-full bg-blue-600 text-white py-2 px-3 rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors mb-2"
       >
         {isTesting ? '測試中...' : '執行音頻測試'}
       </button>
       
       {testResults.length > 0 && (
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
           {testResults.map((result, index) => (
-            <div key={index} className="text-xs">
+            <div key={index} className="text-xs p-2 bg-gray-50 rounded">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-gray-700">{result.name}</span>
                 <span className={`px-2 py-1 rounded text-xs ${
