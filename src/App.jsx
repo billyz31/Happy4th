@@ -29,8 +29,9 @@ const START_DATE = new Date('2021-12-25T00:00:00');
 // 音樂播放組件
 const MusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.5); // 提高預設音量
   const [isHovered, setIsHovered] = useState(false);
+  const [error, setError] = useState(null);
   const audioRef = React.useRef(null);
 
   useEffect(() => {
@@ -39,38 +40,93 @@ const MusicPlayer = () => {
     }
   }, [volume]);
 
-  const togglePlay = () => {
+  // 嘗試自動播放（當用戶與頁面互動時）
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (audioRef.current && !isPlaying) {
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+            // 移除監聽器
+            document.removeEventListener('click', handleFirstInteraction);
+            document.removeEventListener('keydown', handleFirstInteraction);
+          })
+          .catch(err => {
+            console.log("Auto-play prevented:", err);
+            // 不顯示錯誤，因為這是預期的（如果還沒互動）
+          });
+      }
+    };
+
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, []);
+
+  const togglePlay = async () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        setIsPlaying(false);
       } else {
-        audioRef.current.play();
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+          setError(null);
+        } catch (err) {
+          console.error("Playback failed:", err);
+          setError("無法播放音樂，請檢查瀏覽器設定");
+          setIsPlaying(false);
+        }
       }
-      setIsPlaying(!isPlaying);
     }
+  };
+
+  const handleAudioError = (e) => {
+    console.error("Audio error:", e);
+    setError("音樂檔案載入失敗");
   };
 
   return (
     <div 
-      className="fixed bottom-4 right-4 z-50 flex items-center gap-2"
+      className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <audio ref={audioRef} src="/bgm.mp3" loop />
+      {error && (
+        <div className="bg-red-500/80 text-white text-xs px-2 py-1 rounded mb-1 backdrop-blur-sm">
+          {error}
+        </div>
+      )}
+      
+      <audio 
+        ref={audioRef} 
+        src="/bgm.mp3" 
+        loop 
+        preload="auto"
+        onError={handleAudioError}
+      />
       
       <div className={`
-        bg-black/30 backdrop-blur-md border border-white/20 rounded-full p-3 
-        flex items-center gap-3 text-white transition-all duration-300
+        bg-black/40 backdrop-blur-md border border-white/20 rounded-full p-3 
+        flex items-center gap-3 text-white transition-all duration-300 shadow-lg hover:bg-black/50
         ${isHovered ? 'pr-4' : ''}
       `}>
         <button 
           onClick={togglePlay} 
-          className="hover:scale-110 transition-transform flex items-center justify-center w-8 h-8 rounded-full bg-white/10"
+          className={`
+            hover:scale-110 transition-transform flex items-center justify-center w-10 h-10 rounded-full 
+            ${isPlaying ? 'bg-christmas-red/80' : 'bg-white/20'}
+          `}
         >
           {isPlaying ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+            <Pause size={20} />
           ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <Play size={20} className="ml-1" />
           )}
         </button>
 
@@ -78,7 +134,7 @@ const MusicPlayer = () => {
           flex items-center gap-2 overflow-hidden transition-all duration-300
           ${isHovered ? 'w-32 opacity-100' : 'w-0 opacity-0'}
         `}>
-          <Music size={16} />
+          {volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
           <input 
             type="range" 
             min="0" 
@@ -90,6 +146,12 @@ const MusicPlayer = () => {
           />
         </div>
       </div>
+      
+      {!isPlaying && !error && (
+        <div className="text-white/80 text-xs mr-2 animate-pulse bg-black/30 px-2 py-1 rounded-full backdrop-blur-sm">
+          點擊播放音樂 🎵
+        </div>
+      )}
     </div>
   );
 };
