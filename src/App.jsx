@@ -159,7 +159,7 @@ const MusicPlayer = () => {
   const [error, setError] = useState(null);
   const audioRef = React.useRef(null);
 
-  // 頁面載入時立即嘗試播放
+  // 頁面載入時立即嘗試播放 - 增強版自動播放
   useEffect(() => {
     const tryAutoPlay = async () => {
       if (audioRef.current) {
@@ -167,38 +167,70 @@ const MusicPlayer = () => {
           // 設定音量為 50%
           audioRef.current.volume = 0.5;
           
-          // 嘗試自動播放
+          // 立即嘗試自動播放
           await audioRef.current.play();
           setIsPlaying(true);
           setError(null);
           console.log("音樂自動播放成功");
+          return true;
         } catch (err) {
           console.log("自動播放被阻止:", err);
-          
-          // 如果自動播放失敗，添加點擊監聽器
-          const handleClickToPlay = async () => {
-            try {
-              await audioRef.current.play();
-              setIsPlaying(true);
-              setError(null);
-              document.removeEventListener('click', handleClickToPlay);
-            } catch (playErr) {
-              console.error("點擊播放失敗:", playErr);
-              setError("請點擊播放按鈕");
-            }
-          };
-          
-          document.addEventListener('click', handleClickToPlay);
-          
-          // 10秒後移除監聽器
-          setTimeout(() => {
-            document.removeEventListener('click', handleClickToPlay);
-          }, 10000);
+          return false;
         }
       }
+      return false;
     };
 
-    tryAutoPlay();
+    // 策略1: 立即嘗試播放
+    tryAutoPlay().then(success => {
+      if (!success) {
+        // 策略2: 添加多種互動監聽器
+        const interactionEvents = ['click', 'touchstart', 'keydown', 'mousedown', 'scroll'];
+        
+        const handleInteraction = async () => {
+          try {
+            const played = await tryAutoPlay();
+            if (played) {
+              // 成功播放後移除所有監聽器
+              interactionEvents.forEach(event => {
+                document.removeEventListener(event, handleInteraction);
+              });
+            }
+          } catch (err) {
+            console.log("互動播放失敗:", err);
+          }
+        };
+
+        // 添加所有互動事件監聽器
+        interactionEvents.forEach(event => {
+          document.addEventListener(event, handleInteraction, { once: true });
+        });
+
+        // 策略3: 定時重試機制
+        const retryInterval = setInterval(async () => {
+          try {
+            const played = await tryAutoPlay();
+            if (played) {
+              clearInterval(retryInterval);
+            }
+          } catch (err) {
+            console.log("定時重試失敗:", err);
+          }
+        }, 3000);
+
+        // 30秒後停止重試
+        setTimeout(() => {
+          clearInterval(retryInterval);
+          interactionEvents.forEach(event => {
+            document.removeEventListener(event, handleInteraction);
+          });
+          
+          if (!isPlaying) {
+            setError("點擊播放音樂 🎵");
+          }
+        }, 30000);
+      }
+    });
 
     return () => {
       // 清理
