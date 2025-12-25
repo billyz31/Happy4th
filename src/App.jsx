@@ -26,44 +26,58 @@ const PHOTOS = [
 // 開始交往日期：2021/12/25
 const START_DATE = new Date('2021-12-25T00:00:00');
 
-// 音樂播放組件
+// 音樂播放組件 - 自動播放版本
 const MusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.5); // 提高預設音量
-  const [isHovered, setIsHovered] = useState(false);
   const [error, setError] = useState(null);
   const audioRef = React.useRef(null);
 
+  // 頁面載入時立即嘗試播放
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  // 嘗試自動播放（當用戶與頁面互動時）
-  useEffect(() => {
-    const handleFirstInteraction = () => {
-      if (audioRef.current && !isPlaying) {
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            // 移除監聽器
-            document.removeEventListener('click', handleFirstInteraction);
-            document.removeEventListener('keydown', handleFirstInteraction);
-          })
-          .catch(err => {
-            console.log("Auto-play prevented:", err);
-            // 不顯示錯誤，因為這是預期的（如果還沒互動）
-          });
+    const tryAutoPlay = async () => {
+      if (audioRef.current) {
+        try {
+          // 設定音量為 50%
+          audioRef.current.volume = 0.5;
+          
+          // 嘗試自動播放
+          await audioRef.current.play();
+          setIsPlaying(true);
+          setError(null);
+          console.log("音樂自動播放成功");
+        } catch (err) {
+          console.log("自動播放被阻止:", err);
+          
+          // 如果自動播放失敗，添加點擊監聽器
+          const handleClickToPlay = async () => {
+            try {
+              await audioRef.current.play();
+              setIsPlaying(true);
+              setError(null);
+              document.removeEventListener('click', handleClickToPlay);
+            } catch (playErr) {
+              console.error("點擊播放失敗:", playErr);
+              setError("請點擊播放按鈕");
+            }
+          };
+          
+          document.addEventListener('click', handleClickToPlay);
+          
+          // 10秒後移除監聽器
+          setTimeout(() => {
+            document.removeEventListener('click', handleClickToPlay);
+          }, 10000);
+        }
       }
     };
 
-    document.addEventListener('click', handleFirstInteraction);
-    document.addEventListener('keydown', handleFirstInteraction);
+    tryAutoPlay();
 
     return () => {
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
+      // 清理
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
     };
   }, []);
 
@@ -78,25 +92,20 @@ const MusicPlayer = () => {
           setIsPlaying(true);
           setError(null);
         } catch (err) {
-          console.error("Playback failed:", err);
-          setError("無法播放音樂，請檢查瀏覽器設定");
-          setIsPlaying(false);
+          console.error("播放失敗:", err);
+          setError("播放失敗");
         }
       }
     }
   };
 
   const handleAudioError = (e) => {
-    console.error("Audio error:", e);
-    setError("音樂檔案載入失敗");
+    console.error("音頻錯誤:", e);
+    setError("音樂檔案問題");
   };
 
   return (
-    <div 
-      className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
       {error && (
         <div className="bg-red-500/80 text-white text-xs px-2 py-1 rounded mb-1 backdrop-blur-sm">
           {error}
@@ -111,45 +120,26 @@ const MusicPlayer = () => {
         onError={handleAudioError}
       />
       
-      <div className={`
-        bg-black/40 backdrop-blur-md border border-white/20 rounded-full p-3 
-        flex items-center gap-3 text-white transition-all duration-300 shadow-lg hover:bg-black/50
-        ${isHovered ? 'pr-4' : ''}
-      `}>
-        <button 
-          onClick={togglePlay} 
-          className={`
-            hover:scale-110 transition-transform flex items-center justify-center w-10 h-10 rounded-full 
-            ${isPlaying ? 'bg-christmas-red/80' : 'bg-white/20'}
-          `}
-        >
-          {isPlaying ? (
-            <Pause size={20} />
-          ) : (
-            <Play size={20} className="ml-1" />
-          )}
-        </button>
-
-        <div className={`
-          flex items-center gap-2 overflow-hidden transition-all duration-300
-          ${isHovered ? 'w-32 opacity-100' : 'w-0 opacity-0'}
-        `}>
-          {volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          <input 
-            type="range" 
-            min="0" 
-            max="1" 
-            step="0.01" 
-            value={volume} 
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-christmas-red"
-          />
-        </div>
-      </div>
+      <button 
+        onClick={togglePlay} 
+        className={`
+          bg-black/40 backdrop-blur-md border border-white/20 rounded-full p-3 
+          text-white transition-all duration-300 shadow-lg hover:bg-black/50 hover:scale-110
+          flex items-center justify-center
+          ${isPlaying ? 'bg-christmas-red/80' : ''}
+        `}
+        title={isPlaying ? "暫停音樂" : "播放音樂"}
+      >
+        {isPlaying ? (
+          <Pause size={20} />
+        ) : (
+          <Play size={20} className="ml-1" />
+        )}
+      </button>
       
       {!isPlaying && !error && (
         <div className="text-white/80 text-xs mr-2 animate-pulse bg-black/30 px-2 py-1 rounded-full backdrop-blur-sm">
-          點擊播放音樂 🎵
+          點擊播放 🎵
         </div>
       )}
     </div>
