@@ -159,83 +159,72 @@ const MusicPlayer = () => {
   const [error, setError] = useState(null);
   const audioRef = React.useRef(null);
 
-  // 頁面載入時立即嘗試播放 - 增強版自動播放
+  // 強制自動播放策略
   useEffect(() => {
-    const tryAutoPlay = async () => {
-      if (audioRef.current) {
-        try {
-          // 設定音量為 50%
-          audioRef.current.volume = 0.5;
-          
-          // 立即嘗試自動播放
-          await audioRef.current.play();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // 設定音量
+    audio.volume = 0.5;
+    
+    // 立即嘗試播放（繞過瀏覽器限制）
+    const attemptPlay = () => {
+      audio.play()
+        .then(() => {
           setIsPlaying(true);
           setError(null);
           console.log("音樂自動播放成功");
-          return true;
-        } catch (err) {
-          console.log("自動播放被阻止:", err);
-          return false;
-        }
-      }
-      return false;
+        })
+        .catch(err => {
+          console.log("自動播放失敗:", err);
+          
+          // 創建一個隱形的播放按鈕並模擬點擊
+          const playButton = document.createElement('button');
+          playButton.style.display = 'none';
+          playButton.textContent = '播放';
+          document.body.appendChild(playButton);
+          
+          // 嘗試通過用戶手勢觸發播放
+          const playViaGesture = () => {
+            audio.play()
+              .then(() => {
+                setIsPlaying(true);
+                setError(null);
+                document.body.removeChild(playButton);
+                document.removeEventListener('click', playViaGesture);
+                document.removeEventListener('touchstart', playViaGesture);
+              })
+              .catch(playErr => {
+                console.log("手勢觸發播放失敗:", playErr);
+                setError("點擊播放音樂 🎵");
+              });
+          };
+          
+          // 模擬點擊隱藏按鈕來建立用戶手勢
+          try {
+            playButton.click();
+            // 添加事件監聽器等待真正的用戶互動
+            document.addEventListener('click', playViaGesture, { once: true });
+            document.addEventListener('touchstart', playViaGesture, { once: true });
+          } catch (simulateErr) {
+            console.log("模擬點擊失敗:", simulateErr);
+          }
+          
+          // 5秒後移除隱藏按鈕
+          setTimeout(() => {
+            if (document.body.contains(playButton)) {
+              document.body.removeChild(playButton);
+            }
+          }, 5000);
+        });
     };
 
-    // 策略1: 立即嘗試播放
-    tryAutoPlay().then(success => {
-      if (!success) {
-        // 策略2: 添加多種互動監聽器
-        const interactionEvents = ['click', 'touchstart', 'keydown', 'mousedown', 'scroll'];
-        
-        const handleInteraction = async () => {
-          try {
-            const played = await tryAutoPlay();
-            if (played) {
-              // 成功播放後移除所有監聽器
-              interactionEvents.forEach(event => {
-                document.removeEventListener(event, handleInteraction);
-              });
-            }
-          } catch (err) {
-            console.log("互動播放失敗:", err);
-          }
-        };
-
-        // 添加所有互動事件監聽器
-        interactionEvents.forEach(event => {
-          document.addEventListener(event, handleInteraction, { once: true });
-        });
-
-        // 策略3: 定時重試機制
-        const retryInterval = setInterval(async () => {
-          try {
-            const played = await tryAutoPlay();
-            if (played) {
-              clearInterval(retryInterval);
-            }
-          } catch (err) {
-            console.log("定時重試失敗:", err);
-          }
-        }, 3000);
-
-        // 30秒後停止重試
-        setTimeout(() => {
-          clearInterval(retryInterval);
-          interactionEvents.forEach(event => {
-            document.removeEventListener(event, handleInteraction);
-          });
-          
-          if (!isPlaying) {
-            setError("點擊播放音樂 🎵");
-          }
-        }, 30000);
-      }
-    });
+    // 立即嘗試播放
+    attemptPlay();
 
     return () => {
-      // 清理
-      if (audioRef.current) {
-        audioRef.current.pause();
+      if (audio) {
+        audio.pause();
       }
     };
   }, []);
