@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Heart, Calendar, Clock, Music, ChevronDown } from 'lucide-react';
+import { Heart, Calendar, Clock, Music, ChevronDown, Play, Pause } from 'lucide-react';
 
 // 照片列表
 const PHOTOS = [
