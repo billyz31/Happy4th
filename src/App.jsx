@@ -102,6 +102,22 @@ const MusicPlayer = () => {
   const handleAudioError = (e) => {
     console.error("音頻錯誤:", e);
     setError("音樂檔案問題");
+    
+    // 嘗試使用不同的路徑格式
+    setTimeout(() => {
+      if (audioRef.current) {
+        // 嘗試使用相對路徑
+        audioRef.current.src = "./bgm.mp3";
+        audioRef.current.load();
+        
+        // 再次嘗試播放
+        setTimeout(() => {
+          audioRef.current.play().catch(err => {
+            console.log("第二次播放嘗試失敗:", err);
+          });
+        }, 1000);
+      }
+    }, 1000);
   };
 
   return (
@@ -116,8 +132,9 @@ const MusicPlayer = () => {
         ref={audioRef} 
         src="/bgm.mp3" 
         loop 
-        preload="auto"
+        preload="metadata"
         onError={handleAudioError}
+        crossOrigin="anonymous"
       />
       
       <button 
