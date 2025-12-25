@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Heart, Calendar, Clock, Music, ChevronDown, Play, Pause, Volume2, VolumeX, TestTube } from 'lucide-react';
 
+// 開始日期 - 2021年12月25日
+const START_DATE = new Date('2021-12-25T00:00:00');
+
 // 照片列表
 const PHOTOS = [
   '/photos/20251201_172823.jpg', // 這是新的首頁大圖 (請將照片命名為 cover.jpg)
@@ -287,6 +290,16 @@ const MusicPlayer = () => {
   );
 };
 
+// 時間顯示盒子組件
+const TimeBox = ({ value, label }) => (
+  <div className="text-center">
+    <div className="bg-white/20 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/30">
+      <div className="text-4xl md:text-5xl font-bold text-white mb-2">{String(value).padStart(2, '0')}</div>
+      <div className="text-lg text-white/90 font-medium">{label}</div>
+    </div>
+  </div>
+);
+
 // 雪花組件
 const Snowfall = () => {
   const [snowflakes, setSnowflakes] = useState([]);
@@ -498,17 +511,6 @@ function App() {
       <footer className="py-8 text-center text-white/80 text-sm bg-christmas-cookie">
         <p>© 2025 Made with ❤️ for my love</p>
       </footer>
-    </div>
-  );
-}
-
-function TimeBox({ value, label }) {
-  return (
-    <div className="bg-christmas-cream p-6 rounded-lg shadow-md border-b-4 border-christmas-red">
-      <div className="text-4xl md:text-5xl font-bold text-christmas-dark mb-2 font-sans">
-        {String(value).padStart(2, '0')}
-      </div>
-      <div className="text-gray-500 uppercase tracking-widest text-sm">{label}</div>
     </div>
   );
 }
