@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Heart, Calendar, Clock, Music, ChevronDown, Play, Pause } from 'lucide-react';
+import { Heart, Calendar, Clock, Music, ChevronDown, Play, Pause, Volume2, VolumeX, TestTube } from 'lucide-react';
 
 // 照片列表
 const PHOTOS = [
@@ -23,8 +23,110 @@ const PHOTOS = [
   '/photos/IMG-20251130-WA0000.jpg',
 ];
 
-// 開始交往日期：2021/12/25
-const START_DATE = new Date('2021-12-25T00:00:00');
+// 音樂測試組件
+const MusicTest = () => {
+  const [testResults, setTestResults] = useState([]);
+  const [isTesting, setIsTesting] = useState(false);
+
+  const testAudioPaths = [
+    { path: "/bgm.mp3", name: "主要音樂檔案" },
+    { path: "./bgm.mp3", name: "相對路徑音樂" },
+    { path: "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3", name: "外部測試音樂" }
+  ];
+
+  const runAudioTest = async () => {
+    setIsTesting(true);
+    setTestResults([]);
+    
+    const results = [];
+    
+    for (const test of testAudioPaths) {
+      const audio = new Audio();
+      audio.src = test.path;
+      audio.volume = 0.1;
+      
+      const result = {
+        ...test,
+        status: 'testing',
+        error: null
+      };
+      
+      results.push(result);
+      setTestResults([...results]);
+      
+      try {
+        // 測試載入
+        await new Promise((resolve, reject) => {
+          audio.addEventListener('canplaythrough', resolve);
+          audio.addEventListener('error', reject);
+          
+          // 設定超時
+          setTimeout(() => reject(new Error('載入超時')), 5000);
+        });
+        
+        // 測試播放
+        await audio.play();
+        audio.pause();
+        
+        result.status = 'success';
+        result.error = null;
+      } catch (error) {
+        result.status = 'error';
+        result.error = error.message;
+      }
+      
+      setTestResults([...results]);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    setIsTesting(false);
+  };
+
+  return (
+    <div className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-md rounded-lg p-4 shadow-lg border">
+      <div className="flex items-center gap-2 mb-3">
+        <TestTube size={18} className="text-blue-600" />
+        <h3 className="font-semibold text-gray-800">音樂測試</h3>
+      </div>
+      
+      <button
+        onClick={runAudioTest}
+        disabled={isTesting}
+        className="w-full bg-blue-600 text-white py-2 px-3 rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
+      >
+        {isTesting ? '測試中...' : '執行音頻測試'}
+      </button>
+      
+      {testResults.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {testResults.map((result, index) => (
+            <div key={index} className="text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-gray-700">{result.name}</span>
+                <span className={`px-2 py-1 rounded text-xs ${
+                  result.status === 'success' ? 'bg-green-100 text-green-800' :
+                  result.status === 'error' ? 'bg-red-100 text-red-800' :
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {result.status === 'success' ? '成功' : 
+                   result.status === 'error' ? '失敗' : '測試中'}
+                </span>
+              </div>
+              <div className="text-gray-500 text-xs mt-1 truncate" title={result.path}>
+                {result.path}
+              </div>
+              {result.error && (
+                <div className="text-red-500 text-xs mt-1">
+                  錯誤: {result.error}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // 音樂播放組件 - 自動播放版本
 const MusicPlayer = () => {
@@ -245,9 +347,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-christmas-cream font-serif relative">
+      <MusicTest />
+      <MusicPlayer />
       <Snowfall />
-      <ChristmasLights />
-      
+      <ChristmasLights /> 
       {/* Hero Section */}
       <header className="relative h-screen flex items-center justify-center overflow-hidden bg-christmas-dark">
         {/* 背景模糊層：讓照片即使縮放也不會留黑邊，而是有氛圍感 */}
