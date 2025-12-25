@@ -26,6 +26,74 @@ const PHOTOS = [
 // 開始交往日期：2021/12/25
 const START_DATE = new Date('2021-12-25T00:00:00');
 
+// 音樂播放組件
+const MusicPlayer = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.3);
+  const [isHovered, setIsHovered] = useState(false);
+  const audioRef = React.useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  return (
+    <div 
+      className="fixed bottom-4 right-4 z-50 flex items-center gap-2"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <audio ref={audioRef} src="/bgm.mp3" loop />
+      
+      <div className={`
+        bg-black/30 backdrop-blur-md border border-white/20 rounded-full p-3 
+        flex items-center gap-3 text-white transition-all duration-300
+        ${isHovered ? 'pr-4' : ''}
+      `}>
+        <button 
+          onClick={togglePlay} 
+          className="hover:scale-110 transition-transform flex items-center justify-center w-8 h-8 rounded-full bg-white/10"
+        >
+          {isPlaying ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          )}
+        </button>
+
+        <div className={`
+          flex items-center gap-2 overflow-hidden transition-all duration-300
+          ${isHovered ? 'w-32 opacity-100' : 'w-0 opacity-0'}
+        `}>
+          <Music size={16} />
+          <input 
+            type="range" 
+            min="0" 
+            max="1" 
+            step="0.01" 
+            value={volume} 
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-christmas-red"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 雪花組件
 const Snowfall = () => {
   const [snowflakes, setSnowflakes] = useState([]);
